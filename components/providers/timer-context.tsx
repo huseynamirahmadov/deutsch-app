@@ -14,68 +14,47 @@ interface TimerContextType extends TimerState {
 
 const POMODORO_SECONDS = 25 * 60; // 25 minutes
 
-const defaultState: TimerState = {
-  totalSeconds: POMODORO_SECONDS,
-  remainingSeconds: POMODORO_SECONDS,
-  isRunning: false,
-  completedSessions: 0,
-};
-
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 export function TimerProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<TimerState>(defaultState);
+  // Splitting state to perfectly match precise sync algorithm
+  const [remainingSeconds, setRemainingSeconds] = useState(POMODORO_SECONDS);
+  const [isRunning, setIsRunning] = useState(false);
+  const [completedSessions, setCompletedSessions] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
+  
+  const totalSeconds = POMODORO_SECONDS;
   const { addXp } = useXp();
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const supabase = createClient();
 
-  // Helper to sync local state from the DB state
-  const syncStateFromDB = (dbState: TimerStateDB) => {
-    let remaining = dbState.duration_seconds;
-    
-    if (dbState.is_running && dbState.start_time) {
-      const start = new Date(dbState.start_time).getTime();
-      const elapsedSeconds = Math.floor((Date.now() - start) / 1000);
-      remaining = Math.max(0, dbState.duration_seconds - elapsedSeconds);
-      
-      // If timer finished while away
-      if (remaining === 0) {
-        setState(prev => ({
-          ...prev,
-          remainingSeconds: 0,
-          isRunning: false,
-          totalSeconds: POMODORO_SECONDS
-        }));
-        
-        // Push the stopped state back to DB to prevent other devices from re-triggering
-        updateTimerState(false, 0, null).catch(console.error);
-        return;
-      }
-    }
-
-    setState(prev => ({
-      ...prev,
-      remainingSeconds: remaining,
-      isRunning: dbState.is_running,
-      totalSeconds: POMODORO_SECONDS // Static for now, could be dynamic in future
-    }));
-  };
-
-  // 1. Initial Load & Realtime Subscription Setup
+  // 1. Initial Load (Hydration) & Subscription
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     async function init() {
       try {
+        // Fetch current row for the logged-in user
         const dbState = await getOrInitTimerState();
-        syncStateFromDB(dbState);
+        
+        // Run exact same calculation for hydration
+        if (dbState.is_running && dbState.start_time) {
+          const now = new Date().getTime();
+          const startTime = new Date(dbState.start_time).getTime();
+          const elapsed = Math.floor((now - startTime) / 1000);
+          setRemainingSeconds(Math.max(0, dbState.duration_seconds - elapsed));
+          setIsRunning(true);
+        } else {
+          setIsRunning(false);
+          setRemainingSeconds(dbState.duration_seconds);
+        }
+        
         setIsLoaded(true);
 
-        // Subscribe to real-time changes from other devices
+        // Real-Time Subscription
         channel = supabase
-          .channel('timer_sync')
+          .channel('timer-sync')
           .on(
             'postgres_changes', 
             { 
@@ -85,15 +64,27 @@ export function TimerProvider({ children }: { children: ReactNode }) {
               filter: `user_id=eq.${dbState.user_id}`
             }, 
             (payload) => {
-              // Whenever the DB changes (e.g. from mobile), sync this browser
-              syncStateFromDB(payload.new as TimerStateDB);
+              const newRecord = payload.new as TimerStateDB;
+              
+              // Synchronization Algorithm
+              if (newRecord.is_running && newRecord.start_time) {
+                const now = new Date().getTime();
+                const startTime = new Date(newRecord.start_time).getTime();
+                const elapsed = Math.floor((now - startTime) / 1000);
+                
+                setRemainingSeconds(Math.max(0, newRecord.duration_seconds - elapsed));
+                setIsRunning(true);
+              } else {
+                setIsRunning(false);
+                setRemainingSeconds(newRecord.duration_seconds);
+              }
             }
           )
           .subscribe();
 
       } catch (error) {
         console.error('Failed to init timer state:', error);
-        setIsLoaded(true); // Fallback to local default if offline
+        setIsLoaded(true); 
       }
     }
 
@@ -104,28 +95,24 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     };
   }, [supabase]);
 
-  // 2. Local Timer Tick Logic (only runs if isRunning is true)
+  // 2. Local Timer Tick Logic (Runs when isRunning is true)
   useEffect(() => {
     if (!isLoaded) return;
 
-    if (state.isRunning && state.remainingSeconds > 0) {
+    if (isRunning && remainingSeconds > 0) {
       intervalRef.current = setInterval(() => {
-        setState((prev) => {
-          if (prev.remainingSeconds <= 1) {
-            // Timer just finished locally on this device!
+        setRemainingSeconds((prev) => {
+          if (prev <= 1) {
+            // Timer finished!
             addXp(25, 'Pomodoro Session');
+            setIsRunning(false);
+            setCompletedSessions(c => c + 1);
             
-            // Push final state to database so other devices stop too
+            // Push final state to database
             updateTimerState(false, 0, null).catch(console.error);
-            
-            return { 
-              ...prev, 
-              remainingSeconds: 0, 
-              isRunning: false, 
-              completedSessions: prev.completedSessions + 1 
-            };
+            return 0;
           }
-          return { ...prev, remainingSeconds: prev.remainingSeconds - 1 };
+          return prev - 1;
         });
       }, 1000);
     } else {
@@ -135,32 +122,31 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [state.isRunning, state.remainingSeconds, isLoaded, addXp]);
+  }, [isRunning, remainingSeconds, isLoaded, addXp]);
 
   // 3. User Actions
   const startTimer = async () => {
-    // If at 0, reset duration before starting
-    const startingDuration = state.remainingSeconds > 0 ? state.remainingSeconds : state.totalSeconds;
-    const startTime = new Date().toISOString();
+    // Determine starting duration based on current remaining
+    const startingDuration = remainingSeconds > 0 ? remainingSeconds : totalSeconds;
+    const startTimeStr = new Date().toISOString();
     
-    // Optimistic UI update
-    setState((prev) => ({ 
-      ...prev, 
-      remainingSeconds: startingDuration, 
-      isRunning: true 
-    }));
+    // Optimistic local update
+    setRemainingSeconds(startingDuration);
+    setIsRunning(true);
 
     try {
-      await updateTimerState(true, startingDuration, startTime);
+      await updateTimerState(true, startingDuration, startTimeStr);
     } catch (e) {
       console.error('Failed to sync timer start', e);
     }
   };
 
   const pauseTimer = async () => {
-    // Optimistic UI update
-    const currentRemaining = state.remainingSeconds;
-    setState((prev) => ({ ...prev, isRunning: false }));
+    // Capture current locally ticking duration to persist
+    const currentRemaining = remainingSeconds;
+    
+    // Optimistic local update
+    setIsRunning(false);
 
     try {
       await updateTimerState(false, currentRemaining, null);
@@ -170,22 +156,29 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   };
   
   const resetTimer = async () => {
-    // Optimistic UI update
-    setState((prev) => ({ 
-      ...prev, 
-      remainingSeconds: prev.totalSeconds, 
-      isRunning: false 
-    }));
+    // Optimistic local update
+    setIsRunning(false);
+    setRemainingSeconds(totalSeconds);
 
     try {
-      await updateTimerState(false, POMODORO_SECONDS, null);
+      await updateTimerState(false, totalSeconds, null);
     } catch (e) {
       console.error('Failed to sync timer reset', e);
     }
   };
 
+  const contextValue: TimerContextType = {
+    totalSeconds,
+    remainingSeconds,
+    isRunning,
+    completedSessions,
+    startTimer,
+    pauseTimer,
+    resetTimer
+  };
+
   return (
-    <TimerContext.Provider value={{ ...state, startTimer, pauseTimer, resetTimer }}>
+    <TimerContext.Provider value={contextValue}>
       {children}
     </TimerContext.Provider>
   );
