@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, CheckCircle, Clock, Languages, Menu, X } from 'lucide-react';
+import { Home, BookOpen, CheckCircle, Clock, Languages, Menu, X, User } from 'lucide-react';
 import { TimerBadge } from './timer-badge';
 import { useXp } from '../providers/xp-context';
 
@@ -14,6 +14,7 @@ export function Sidebar() {
 
   const navItems = [
     { name: 'Dashboard', href: '/', icon: Home },
+    { name: 'Profile', href: '/profile', icon: User },
     { name: 'Timer', href: '/timer', icon: Clock },
     { name: 'Notebook', href: '/notebook', icon: BookOpen },
     { name: 'AI Linter', href: '/linter', icon: CheckCircle },
