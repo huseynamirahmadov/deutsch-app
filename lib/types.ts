@@ -42,9 +42,16 @@ export interface Note {
   updatedAt: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  user_id: string;
+  created_at: string;
+}
+
 export interface NotebookState {
   notes: Note[];
-  categories: string[];
+  categories: Category[];
 }
 
 // Translation

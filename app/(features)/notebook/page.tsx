@@ -7,41 +7,101 @@ import { NoteCard } from '@/components/notebook/note-card';
 import { Note, NotebookState } from '@/lib/types';
 import { BookOpen } from 'lucide-react';
 import { useXp } from '@/components/providers/xp-context';
-import { getNotes, addNote, updateNote, deleteNote } from '@/app/actions/notebook';
-
-const DEFAULT_CATEGORIES = ['Sich vorstellen', 'Beruf', 'Hobbys', 'Alltag', 'Grammatik'];
+import { getNotes, addNote, updateNote, deleteNote as deleteNoteAction } from '@/app/actions/notebook';
+import { getCategories, seedDefaultCategories, addCategory as addCategoryAction, updateCategory as updateCategoryAction, deleteCategory as deleteCategoryAction } from '@/app/actions/categories';
 
 const defaultState: NotebookState = {
   notes: [],
-  categories: DEFAULT_CATEGORIES,
+  categories: [],
 };
 
 export default function NotebookPage() {
   const [state, setState] = useState<NotebookState>(defaultState);
-  const [activeCategory, setActiveCategory] = useState(DEFAULT_CATEGORIES[0]);
+  const [activeCategory, setActiveCategory] = useState('');
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const { addXp } = useXp();
 
   // Load from Supabase DB
   useEffect(() => {
-    getNotes()
-      .then((data) => {
-        setState((prev) => ({ ...prev, notes: data }));
+    async function loadData() {
+      try {
+        const [notesData, categoriesData] = await Promise.all([
+          getNotes(),
+          getCategories()
+        ]);
+
+        let finalCategories = categoriesData;
+        if (finalCategories.length === 0) {
+          // Seed defaults if user has none
+          finalCategories = await seedDefaultCategories();
+        }
+
+        setState({ notes: notesData, categories: finalCategories });
+        
+        if (finalCategories.length > 0) {
+          setActiveCategory(finalCategories[0].name);
+        }
         setIsLoaded(true);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Failed to load notebook state from database:', error);
         setIsLoaded(true); // Still set loaded to show empty state/errors
-      });
+      }
+    }
+
+    loadData();
   }, []);
 
-  const handleAddCategory = (newCategory: string) => {
-    setState((prev) => ({
-      ...prev,
-      categories: [...prev.categories, newCategory],
-    }));
-    setActiveCategory(newCategory);
+  const handleAddCategory = async (newCategoryName: string) => {
+    try {
+      const created = await addCategoryAction(newCategoryName);
+      setState((prev) => ({
+        ...prev,
+        categories: [...prev.categories, created],
+      }));
+      setActiveCategory(newCategoryName);
+    } catch (e) {
+      console.error('Failed to add category', e);
+      alert('Error adding category.');
+    }
+  };
+
+  const handleUpdateCategory = async (categoryId: string, oldName: string, newName: string) => {
+    try {
+      const updated = await updateCategoryAction(categoryId, oldName, newName);
+      setState((prev) => {
+        const newCategories = prev.categories.map((c) => (c.id === categoryId ? updated : c));
+        // Update notes in local state as well
+        const newNotes = prev.notes.map((n) => (n.category === oldName ? { ...n, category: newName } : n));
+        return { categories: newCategories, notes: newNotes };
+      });
+      if (activeCategory === oldName) {
+        setActiveCategory(newName);
+      }
+    } catch (e) {
+      console.error('Failed to update category', e);
+      alert('Error updating category.');
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete "${name}"? Notes will be reassigned to "General".`)) return;
+    
+    try {
+      await deleteCategoryAction(categoryId, name);
+
+      
+      // Easiest reliable way to sync state after a delete+reassign is a quick refetch
+      const [notesData, categoriesData] = await Promise.all([getNotes(), getCategories()]);
+      setState({ notes: notesData, categories: categoriesData });
+      
+      if (activeCategory === name && categoriesData.length > 0) {
+        setActiveCategory(categoriesData.find(c => c.name === 'General')?.name || categoriesData[0].name);
+      }
+    } catch (e) {
+      console.error('Failed to delete category', e);
+      alert('Error deleting category.');
+    }
   };
 
   const handleSaveNote = async (noteData: Omit<Note, 'id' | 'updatedAt'> | Note) => {
@@ -71,7 +131,7 @@ export default function NotebookPage() {
 
   const handleDeleteNote = async (id: string) => {
     try {
-      await deleteNote(id);
+      await deleteNoteAction(id);
       setState((prev) => ({
         ...prev,
         notes: prev.notes.filter((n) => n.id !== id),
@@ -105,11 +165,13 @@ export default function NotebookPage() {
         <CategoryTabs 
           categories={state.categories}
           activeCategory={activeCategory}
-          onSelectCategory={(cat) => {
-            setActiveCategory(cat);
+          onSelectCategory={(catName) => {
+            setActiveCategory(catName);
             setEditingNote(null); // Clear editor when switching tabs
           }}
           onAddCategory={handleAddCategory}
+          onUpdateCategory={handleUpdateCategory}
+          onDeleteCategory={handleDeleteCategory}
         />
       </div>
 

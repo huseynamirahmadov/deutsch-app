@@ -28,8 +28,8 @@ export function Sidebar() {
     <>
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 glass-panel border-b border-slate-800 sticky top-0 z-40 w-full">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <span className="text-amber-500">D</span>eutschLern
+        <h1 className="text-xl font-bold text-white flex items-center">
+          <span className="text-amber-500">Deutsch</span>Lern
         </h1>
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -42,8 +42,8 @@ export function Sidebar() {
 
       {/* Backdrop */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity" 
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -56,8 +56,8 @@ export function Sidebar() {
         w-64 flex-shrink-0 glass-panel flex flex-col h-full
       `}>
         <div className="p-6 hidden md:block">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <span className="text-amber-500">D</span>eutschLern
+          <h1 className="text-2xl font-bold text-white flex items-center">
+            <span className="text-amber-500">Deutsch</span>Lern
           </h1>
         </div>
 
@@ -65,17 +65,16 @@ export function Sidebar() {
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
-            
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-opacity-80 transition-all duration-200 active:scale-95 min-h-[44px] ${
-                  isActive 
-                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' 
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer hover:bg-opacity-80 transition-all duration-200 active:scale-95 min-h-[44px] ${isActive
+                  ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 <span className="font-medium">{item.name}</span>
@@ -86,7 +85,7 @@ export function Sidebar() {
 
         <div className="p-4 space-y-4">
           <TimerBadge />
-          
+
           <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
             <div className="flex justify-between items-end mb-2">
               <div>
@@ -98,7 +97,7 @@ export function Sidebar() {
               </div>
             </div>
             <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-500"
                 style={{ width: `${(totalXp % 100)}%` }}
               />
