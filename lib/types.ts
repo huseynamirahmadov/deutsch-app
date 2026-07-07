@@ -1,9 +1,16 @@
-// Timer state
 export interface TimerState {
   totalSeconds: number;
   remainingSeconds: number;
   isRunning: boolean;
   completedSessions: number;
+}
+
+export interface TimerStateDB {
+  id: string;
+  user_id: string;
+  is_running: boolean;
+  start_time: string | null;
+  duration_seconds: number;
 }
 
 // XP state

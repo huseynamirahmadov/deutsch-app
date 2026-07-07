@@ -13,17 +13,17 @@ interface CategoryTabsProps {
   onDeleteCategory: (categoryId: string, name: string) => void;
 }
 
-export function CategoryTabs({ 
-  categories, 
-  activeCategory, 
-  onSelectCategory, 
+export function CategoryTabs({
+  categories,
+  activeCategory,
+  onSelectCategory,
   onAddCategory,
   onUpdateCategory,
   onDeleteCategory
 }: CategoryTabsProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newCat, setNewCat] = useState('');
-  
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -83,15 +83,14 @@ export function CategoryTabs({
           <div key={cat.id} className="relative group flex items-center shrink-0">
             <button
               onClick={() => onSelectCategory(cat.name)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium cursor-pointer transition-all duration-200 min-h-[44px] flex items-center gap-2 group-hover:pr-14 ${
-                isActive
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium cursor-pointer transition-all duration-200 min-h-[44px] flex items-center gap-2 group-hover:pr-14 ${isActive
                   ? 'bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.3)]'
                   : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-slate-700'
-              }`}
+                }`}
             >
               {cat.name}
             </button>
-            
+
             {/* Hover Actions */}
             <div className="absolute right-1.5 flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <button
@@ -103,7 +102,7 @@ export function CategoryTabs({
                 className={`p-1.5 rounded-full hover:bg-white/20 transition-colors ${isActive ? 'text-black/70 hover:text-black' : 'text-slate-400 hover:text-white'}`}
                 aria-label="Edit category"
               >
-                <Edit2 className="w-3.5 h-3.5" />
+                <Edit2 className="w-3.5 h-3.5 cursor-pointer" />
               </button>
               <button
                 onClick={(e) => {
@@ -113,7 +112,7 @@ export function CategoryTabs({
                 className={`p-1.5 rounded-full hover:bg-rose-500/20 hover:text-rose-500 transition-colors ${isActive ? 'text-black/70' : 'text-slate-400'}`}
                 aria-label="Delete category"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3.5 h-3.5 cursor-pointer" />
               </button>
             </div>
           </div>
