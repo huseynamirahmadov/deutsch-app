@@ -46,3 +46,18 @@ export interface NotebookState {
   notes: Note[];
   categories: string[];
 }
+
+// Translation
+export type TranslationDirection = 'az-to-de' | 'de-to-az';
+
+export interface VocabularyItem {
+  word: string;
+  meaning: string;
+  notes: string;
+}
+
+export interface TranslationResult {
+  translatedText: string;
+  detectedLanguage: string;
+  vocabularyBreakdown: VocabularyItem[];
+}

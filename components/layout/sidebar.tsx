@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, CheckCircle, Clock } from 'lucide-react';
+import { Home, BookOpen, CheckCircle, Clock, Languages } from 'lucide-react';
 import { TimerBadge } from './timer-badge';
 import { useXp } from '../providers/xp-context';
 
@@ -16,6 +16,7 @@ export function Sidebar() {
     { name: 'Timer', href: '/timer', icon: Clock },
     { name: 'Notebook', href: '/notebook', icon: BookOpen },
     { name: 'AI Linter', href: '/linter', icon: CheckCircle },
+    { name: 'Translation', href: '/translation', icon: Languages },
   ];
 
   return (
