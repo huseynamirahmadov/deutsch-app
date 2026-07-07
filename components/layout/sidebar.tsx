@@ -19,6 +19,9 @@ export function Sidebar() {
     { name: 'Translation', href: '/translation', icon: Languages },
   ];
 
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup');
+  if (isAuthRoute) return null;
+
   return (
     <aside className="w-64 flex-shrink-0 glass-panel flex flex-col h-full sticky top-0">
       <div className="p-6">
@@ -69,6 +72,16 @@ export function Sidebar() {
             />
           </div>
         </div>
+
+        <button
+          onClick={async () => {
+            const { signOut } = await import('@/app/actions/auth');
+            await signOut();
+          }}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-4 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/50"
+        >
+          <span className="font-medium text-sm">Sign Out</span>
+        </button>
       </div>
     </aside>
   );

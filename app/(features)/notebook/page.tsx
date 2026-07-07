@@ -7,6 +7,7 @@ import { NoteCard } from '@/components/notebook/note-card';
 import { Note, NotebookState } from '@/lib/types';
 import { BookOpen } from 'lucide-react';
 import { useXp } from '@/components/providers/xp-context';
+import { getNotes, addNote, updateNote, deleteNote } from '@/app/actions/notebook';
 
 const DEFAULT_CATEGORIES = ['Sich vorstellen', 'Beruf', 'Hobbys', 'Alltag', 'Grammatik'];
 
@@ -22,71 +23,69 @@ export default function NotebookPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const { addXp } = useXp();
 
-  // Load from localStorage
+  // Load from Supabase DB
   useEffect(() => {
-    const saved = localStorage.getItem('deutsch_notebook_state');
-    if (saved) {
-      try {
-        setState(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse notebook state');
-      }
-    }
-    setIsLoaded(true);
+    getNotes()
+      .then((data) => {
+        setState((prev) => ({ ...prev, notes: data }));
+        setIsLoaded(true);
+      })
+      .catch((error) => {
+        console.error('Failed to load notebook state from database:', error);
+        setIsLoaded(true); // Still set loaded to show empty state/errors
+      });
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('deutsch_notebook_state', JSON.stringify(state));
-    }
-  }, [state, isLoaded]);
-
   const handleAddCategory = (newCategory: string) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      categories: [...prev.categories, newCategory]
+      categories: [...prev.categories, newCategory],
     }));
     setActiveCategory(newCategory);
   };
 
-  const handleSaveNote = (noteData: Omit<Note, 'id' | 'updatedAt'> | Note) => {
-    setState(prev => {
-      let newNotes = [...prev.notes];
-      
+  const handleSaveNote = async (noteData: Omit<Note, 'id' | 'updatedAt'> | Note) => {
+    try {
       if ('id' in noteData && noteData.id) {
         // Edit existing
-        newNotes = newNotes.map(n => 
-          n.id === noteData.id ? { ...noteData, updatedAt: new Date().toISOString() } as Note : n
-        );
+        const updated = await updateNote(noteData.id, noteData.category, noteData.content);
+        setState((prev) => ({
+          ...prev,
+          notes: prev.notes.map((n) => (n.id === updated.id ? updated : n)),
+        }));
       } else {
         // Create new
-        const newNote: Note = {
-          id: Date.now().toString(),
-          content: noteData.content,
-          category: noteData.category,
-          updatedAt: new Date().toISOString(),
-        };
-        newNotes = [newNote, ...newNotes];
+        const created = await addNote(noteData.category, noteData.content);
+        setState((prev) => ({
+          ...prev,
+          notes: [created, ...prev.notes],
+        }));
         addXp(5, 'Created a Note');
       }
-      
-      return { ...prev, notes: newNotes };
-    });
-    setEditingNote(null);
-  };
-
-  const handleDeleteNote = (id: string) => {
-    setState(prev => ({
-      ...prev,
-      notes: prev.notes.filter(n => n.id !== id)
-    }));
-    if (editingNote?.id === id) {
       setEditingNote(null);
+    } catch (e) {
+      console.error('Failed to save note:', e);
+      alert('Error saving note. Please try again.');
     }
   };
 
-  const filteredNotes = state.notes.filter(n => n.category === activeCategory);
+  const handleDeleteNote = async (id: string) => {
+    try {
+      await deleteNote(id);
+      setState((prev) => ({
+        ...prev,
+        notes: prev.notes.filter((n) => n.id !== id),
+      }));
+      if (editingNote?.id === id) {
+        setEditingNote(null);
+      }
+    } catch (e) {
+      console.error('Failed to delete note:', e);
+      alert('Error deleting note. Please try again.');
+    }
+  };
+
+  const filteredNotes = state.notes.filter((n) => n.category === activeCategory);
 
   if (!isLoaded) return null;
 
@@ -125,7 +124,7 @@ export default function NotebookPage() {
                 <p className="text-slate-500">Noch keine Notizen in dieser Kategorie.</p>
               </div>
             ) : (
-              filteredNotes.map(note => (
+              filteredNotes.map((note) => (
                 <NoteCard 
                   key={note.id} 
                   note={note} 
