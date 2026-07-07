@@ -27,7 +27,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const { addXp } = useXp();
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const supabase = createClient();
+  const [supabase] = useState(() => createClient());
 
   // 1. Initial Load (Hydration) & Subscription
   useEffect(() => {
