@@ -23,11 +23,11 @@ export function TimerDisplay() {
   return (
     <div className="relative flex items-center justify-center">
       {/* Outer Glow */}
-      <div className={`absolute inset-0 m-auto w-[300px] h-[300px] rounded-full blur-3xl opacity-20 ${
+      <div className={`absolute inset-0 m-auto w-64 h-64 sm:w-[300px] sm:h-[300px] rounded-full blur-3xl opacity-20 ${
         progress > 85 ? 'bg-rose-500' : progress > 50 ? 'bg-amber-500' : 'bg-emerald-500'
       } transition-colors duration-1000`} />
 
-      <svg width="300" height="300" className="transform -rotate-90 relative z-10">
+      <svg viewBox="0 0 300 300" className="w-64 h-64 sm:w-[300px] sm:h-[300px] transform -rotate-90 relative z-10">
         {/* Background Circle */}
         <circle
           cx="150"
@@ -52,10 +52,10 @@ export function TimerDisplay() {
       </svg>
       
       <div className="absolute flex flex-col items-center justify-center z-20">
-        <span className="text-6xl font-mono font-bold text-white tracking-wider">
+        <span className="text-5xl sm:text-6xl font-mono font-bold text-white tracking-wider">
           {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
         </span>
-        <span className="text-slate-400 mt-2 text-sm font-medium uppercase tracking-widest">
+        <span className="text-slate-400 mt-1 sm:mt-2 text-xs sm:text-sm font-medium uppercase tracking-widest">
           {remainingSeconds === 0 ? 'Completed' : 'Focus Time'}
         </span>
       </div>

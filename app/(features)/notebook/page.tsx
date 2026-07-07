@@ -90,18 +90,18 @@ export default function NotebookPage() {
   if (!isLoaded) return null;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 h-full flex flex-col">
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="p-3 bg-blue-500/20 rounded-xl">
-          <BookOpen className="w-8 h-8 text-blue-500" />
+    <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 h-full flex flex-col px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 shrink-0">
+        <div className="p-3 bg-blue-500/20 rounded-xl w-fit">
+          <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-white">Dein Notizbuch</h1>
-          <p className="text-slate-400">Save vocabulary, grammar rules, and example sentences by category.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Dein Notizbuch</h1>
+          <p className="text-slate-400 text-sm sm:text-base mt-1 sm:mt-0">Save vocabulary, grammar rules, and example sentences by category.</p>
         </div>
       </div>
 
-      <div className="shrink-0">
+      <div className="shrink-0 w-full overflow-x-auto pb-2">
         <CategoryTabs 
           categories={state.categories}
           activeCategory={activeCategory}
@@ -113,15 +113,15 @@ export default function NotebookPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 flex-1 min-h-0">
         {/* Note List - Left Column */}
-        <div className="lg:col-span-5 flex flex-col min-h-[400px]">
-          <h2 className="text-xl font-semibold text-white mb-4 shrink-0">Notizen ({filteredNotes.length})</h2>
+        <div className="lg:col-span-5 flex flex-col min-h-[250px] sm:min-h-[400px]">
+          <h2 className="text-lg sm:text-xl font-semibold text-white mb-4 shrink-0">Notizen ({filteredNotes.length})</h2>
           
-          <div className="overflow-y-auto pr-2 space-y-4 pb-4">
+          <div className="overflow-y-auto pr-2 space-y-3 sm:space-y-4 pb-4">
             {filteredNotes.length === 0 ? (
-              <div className="glass-panel p-8 rounded-xl border-dashed border-2 border-slate-700/50 text-center">
-                <p className="text-slate-500">Noch keine Notizen in dieser Kategorie.</p>
+              <div className="glass-panel p-6 sm:p-8 rounded-xl border-dashed border-2 border-slate-700/50 text-center">
+                <p className="text-slate-500 text-sm sm:text-base">Noch keine Notizen in dieser Kategorie.</p>
               </div>
             ) : (
               filteredNotes.map((note) => (
@@ -137,7 +137,7 @@ export default function NotebookPage() {
         </div>
 
         {/* Note Editor - Right Column */}
-        <div className="lg:col-span-7 h-full min-h-[400px]">
+        <div className="lg:col-span-7 h-full min-h-[300px] sm:min-h-[400px]">
           <NoteEditor 
             note={editingNote} 
             category={activeCategory} 

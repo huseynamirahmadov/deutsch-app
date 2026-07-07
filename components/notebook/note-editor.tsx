@@ -35,19 +35,19 @@ export function NoteEditor({ note, category, onSave }: NoteEditorProps) {
   };
 
   return (
-    <div className="glass-card p-6 border-slate-700/50 flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-white">
-          {note ? 'Notiz bearbeiten' : 'Neue Notiz'} <span className="text-slate-500 text-sm font-normal">({category})</span>
+    <div className="glass-card p-4 sm:p-6 border-slate-700/50 flex flex-col h-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+        <h3 className="text-base sm:text-lg font-semibold text-white">
+          {note ? 'Notiz bearbeiten' : 'Neue Notiz'} <span className="text-slate-500 text-xs sm:text-sm font-normal">({category})</span>
         </h3>
         
         <button
           onClick={handleSave}
           disabled={!content.trim()}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+          className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition-all duration-200 active:scale-95 min-h-[44px] hover:bg-opacity-80 w-full sm:w-auto ${
             isSaved 
               ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' 
-              : 'bg-amber-500 text-black hover:bg-amber-400 disabled:opacity-50 disabled:bg-slate-700 disabled:text-slate-400'
+              : 'bg-amber-500 text-black hover:bg-amber-400 disabled:opacity-50 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed'
           }`}
         >
           {isSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
@@ -62,7 +62,7 @@ export function NoteEditor({ note, category, onSave }: NoteEditorProps) {
           setIsSaved(false);
         }}
         placeholder="Schreiben Sie hier Ihre Vokabeln, Grammatikregeln oder Beispielsätze..."
-        className="flex-1 w-full min-h-[300px] bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 text-white placeholder-slate-600 resize-none focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all"
+        className="flex-1 w-full min-h-[200px] sm:min-h-[300px] bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 sm:p-4 text-sm sm:text-base text-white placeholder-slate-600 resize-none focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all"
       />
     </div>
   );

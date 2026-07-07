@@ -45,25 +45,25 @@ export default function LinterPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-amber-500/20 rounded-xl">
-          <Sparkles className="w-8 h-8 text-amber-500" />
+    <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8 px-2 sm:px-0">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 sm:mb-8">
+        <div className="p-3 bg-amber-500/20 rounded-xl w-fit">
+          <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-white">AI Grammar Linter</h1>
-          <p className="text-slate-400">Powered by Gemini 2.5 Flash. Write in German and get instant feedback.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">AI Grammar Linter</h1>
+          <p className="text-slate-400 text-sm sm:text-base mt-1 sm:mt-0">Powered by Gemini 2.5 Flash. Write in German and get instant feedback.</p>
         </div>
       </div>
 
       {errorMsg && (
         <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-          <p className="text-rose-400">{errorMsg}</p>
+          <p className="text-rose-400 text-sm sm:text-base">{errorMsg}</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-white">Your Text</h2>
           <TextInput 

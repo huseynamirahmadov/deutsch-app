@@ -14,7 +14,7 @@ export function TimerBadge() {
   return (
     <Link 
       href="/timer"
-      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors border border-slate-700 hover:border-amber-500/50"
+      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 cursor-pointer transition-all duration-200 active:scale-95 min-h-[44px] border border-slate-700 hover:border-amber-500/50 hover:bg-opacity-80"
     >
       <div className="relative">
         <Clock className="w-4 h-4 text-slate-300" />

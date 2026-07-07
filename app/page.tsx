@@ -12,12 +12,12 @@ export default function Home() {
   const { completedSessions } = useTimer();
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-6 sm:space-y-8 max-w-6xl mx-auto px-2 sm:px-0">
       <WelcomeHero />
       
       <div>
-        <h2 className="text-xl font-bold text-white mb-4">Your Progress</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Your Progress</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           <StatsCard 
             title="Total XP" 
             value={totalXp.toString()} 
@@ -39,7 +39,7 @@ export default function Home() {
       </div>
 
       <div>
-        <h2 className="text-xl font-bold text-white mb-4">Quick Actions</h2>
+        <h2 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Quick Actions</h2>
         <QuickActions />
       </div>
     </div>

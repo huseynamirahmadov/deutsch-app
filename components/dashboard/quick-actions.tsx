@@ -31,22 +31,22 @@ export function QuickActions() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {actions.map((action) => {
         const Icon = action.icon;
         return (
           <Link 
             key={action.href}
             href={action.href}
-            className={`flex flex-col p-6 rounded-2xl border transition-all duration-300 group ${action.color} ${action.hoverColor} backdrop-blur-sm`}
+            className={`flex flex-col p-5 sm:p-6 rounded-2xl border cursor-pointer transition-all duration-300 active:scale-[0.98] group ${action.color} ${action.hoverColor} backdrop-blur-sm hover:bg-opacity-80`}
           >
-            <div className="p-3 rounded-xl bg-slate-900/50 w-fit mb-4">
-              <Icon className="w-6 h-6" />
+            <div className="p-3 rounded-xl bg-slate-900/50 w-fit mb-3 sm:mb-4">
+              <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">
+            <h3 className="text-base sm:text-lg font-bold text-white mb-2 group-hover:text-amber-400 transition-colors">
               {action.title}
             </h3>
-            <p className="text-slate-400 text-sm mb-4 flex-grow">
+            <p className="text-slate-400 text-xs sm:text-sm mb-3 sm:mb-4 flex-grow">
               {action.description}
             </p>
             <div className="flex items-center text-sm font-medium opacity-80 group-hover:opacity-100 transition-opacity">
