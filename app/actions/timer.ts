@@ -15,7 +15,7 @@ export async function getOrInitTimerState(): Promise<TimerStateDB> {
   const { data, error } = await supabase
     .from('timer_states')
     .select('*')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single()
 
   if (data && !error) {
@@ -26,7 +26,7 @@ export async function getOrInitTimerState(): Promise<TimerStateDB> {
   const { data: newData, error: insertError } = await supabase
     .from('timer_states')
     .insert([{ 
-      user_id: user.id, 
+      id: user.id, 
       is_running: false, 
       start_time: null, 
       duration_seconds: POMODORO_SECONDS 
@@ -51,7 +51,7 @@ export async function updateTimerState(isRunning: boolean, durationSeconds: numb
       duration_seconds: durationSeconds, 
       start_time: startTime 
     })
-    .eq('user_id', user.id)
+    .eq('id', user.id)
 
   if (error) throw new Error(error.message)
 }

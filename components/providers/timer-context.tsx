@@ -61,7 +61,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
               event: 'UPDATE', 
               schema: 'public', 
               table: 'timer_states',
-              filter: `user_id=eq.${dbState.user_id}`
+              filter: `id=eq.${dbState.id}`
             }, 
             (payload) => {
               const newRecord = payload.new as TimerStateDB;
